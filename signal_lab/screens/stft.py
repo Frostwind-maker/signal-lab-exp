@@ -2,8 +2,8 @@ import numpy as np
 import streamlit as st
 
 from signal_lab.core.time_frequency import compute_stft
-from signal_lab.visualization.animation import render_animation_controls
-from signal_lab.visualization.plots import create_stft_figure
+from signal_lab.visualization.animation import render_animation_player
+from signal_lab.visualization.plots import build_stft_animation
 
 
 def render() -> None:
@@ -43,22 +43,16 @@ def render() -> None:
         fft_points,
         window_name,
     )
-    def render_frame(frame_index: int) -> None:
-        st.pyplot(
-            create_stft_figure(
-                time,
-                samples,
-                frame_times,
-                frequencies,
-                magnitude,
-                window_length=window_length,
-                sampling_rate=sampling_rate,
-                current_frame=frame_index,
-            ),
-            width="stretch",
-        )
-
-    render_animation_controls(len(frame_times), "stft_analysis", render_frame)
+    figure = build_stft_animation(
+        time,
+        samples,
+        frame_times,
+        frequencies,
+        magnitude,
+        window_length=window_length,
+        sampling_rate=sampling_rate,
+    )
+    render_animation_player(figure, "stft_animation")
     metrics = st.columns(2)
     metrics[0].metric("窗长", f"{window_length / sampling_rate * 1000:.0f} ms")
     metrics[1].metric("FFT 频率栅格间隔", f"{sampling_rate / fft_points:.2f} Hz")

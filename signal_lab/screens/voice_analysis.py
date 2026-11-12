@@ -6,9 +6,9 @@ import sounddevice as sd
 
 from signal_lab.core.audio import analyze_audio_frames, decode_wav
 from signal_lab.core.spectrum import compute_amplitude_spectrum
-from signal_lab.visualization.animation import render_animation_controls
+from signal_lab.visualization.animation import render_animation_player
 from signal_lab.visualization.plots import (
-    create_audio_analysis_figure,
+    build_stft_animation,
     create_live_audio_figure,
 )
 
@@ -219,25 +219,27 @@ def render() -> None:
     if audio_file.getbuffer().nbytes and duration >= 30:
         st.warning("为控制计算量，仅分析音频的前 30 秒。")
 
-    display_step = max(1, samples.size // 12000)
-    time = np.arange(0, samples.size, display_step) / sampling_rate
-    displayed_samples = samples[::display_step]
-
-    def render_frame(frame_index: int) -> None:
-        st.pyplot(
-            create_audio_analysis_figure(
-                time,
-                displayed_samples,
-                frame_times,
-                frequencies,
-                magnitude,
-                frame_index,
-                sampling_rate,
-            ),
-            width="stretch",
-        )
-
-    render_animation_controls(len(frame_times), "voice_analysis", render_frame)
+    display_time = np.linspace(
+        0,
+        (samples.size - 1) / sampling_rate,
+        min(1200, samples.size),
+    )
+    displayed_samples = np.interp(
+        display_time,
+        np.arange(samples.size) / sampling_rate,
+        samples,
+    )
+    frame_step = max(1, int(np.ceil(frame_times.size / 300)))
+    figure = build_stft_animation(
+        display_time,
+        displayed_samples,
+        frame_times[::frame_step],
+        frequencies,
+        magnitude[::frame_step],
+        window_length=max(2, round(sampling_rate * frame_length_ms / 1000)),
+        sampling_rate=sampling_rate,
+    )
+    render_animation_player(figure, "voice_analysis_animation")
     st.audio(audio_bytes, format="audio/wav")
     metrics = st.columns(3)
     metrics[0].metric("采样率", f"{sampling_rate:g} Hz")

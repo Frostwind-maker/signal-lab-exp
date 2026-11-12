@@ -5,8 +5,8 @@ from signal_lab.core.fourier_series import (
     harmonic_components,
     synthesize_series,
 )
-from signal_lab.visualization.animation import render_animation_controls
-from signal_lab.visualization.plots import create_series_figure
+from signal_lab.visualization.animation import render_animation_player
+from signal_lab.visualization.plots import build_series_animation
 
 
 def render() -> None:
@@ -23,43 +23,40 @@ def render() -> None:
     with columns[2]:
         max_harmonic = st.slider("最高谐波次数", 1, 51, 15, 2)
 
-    time = np.linspace(0, 2 / fundamental_frequency, 1600, endpoint=False)
+    time = np.linspace(0, 2 / fundamental_frequency, 1200, endpoint=False)
     phase = 2 * np.pi * fundamental_frequency * time
     if series_type == "square":
         reference = amplitude * np.sign(np.sin(phase))
     else:
         reference = amplitude * (2 / np.pi) * np.arcsin(np.sin(phase))
 
-    def render_frame(frame_index: int) -> None:
-        harmonic_count = frame_index + 1
-        approximation = synthesize_series(
-            time,
-            series_type,
-            fundamental_frequency,
-            harmonic_count,
-            amplitude,
-        )
-        orders, _, coefficients = harmonic_components(
-            series_type,
-            fundamental_frequency,
-            harmonic_count,
-            amplitude,
-        )
-        st.pyplot(
-            create_series_figure(
+    approximations = np.stack(
+        [
+            synthesize_series(
                 time,
-                approximation,
-                orders,
-                np.abs(coefficients),
-                signal_name=series_name,
-                harmonic_count=harmonic_count,
-                reference=reference,
-            ),
-            width="stretch",
-        )
-        st.metric("当前谐波上限", harmonic_count)
-
-    render_animation_controls(max_harmonic, "fourier_series", render_frame)
+                series_type,
+                fundamental_frequency,
+                harmonic_count,
+                amplitude,
+            )
+            for harmonic_count in range(1, max_harmonic + 1)
+        ]
+    )
+    orders, _, coefficients = harmonic_components(
+        series_type,
+        fundamental_frequency,
+        max_harmonic,
+        amplitude,
+    )
+    figure = build_series_animation(
+        time,
+        approximations,
+        orders,
+        np.abs(coefficients),
+        signal_name=series_name,
+        reference=reference,
+    )
+    render_animation_player(figure, "fourier_series_animation")
     st.info(
         "方波理想频谱只包含奇次谐波，幅度按 1/n 衰减；"
         "三角波奇次谐波按 1/n² 衰减。增加项数后，方波跳变附近仍会出现吉布斯过冲。"

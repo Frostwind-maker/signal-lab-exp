@@ -31,10 +31,23 @@ class AppPageTests(unittest.TestCase):
                     [error.message for error in self.app.exception],
                 )
 
+    def test_animation_pages_render_plotly_charts(self) -> None:
+        pages = ("时域与频域", "傅里叶级数合成", "短时傅里叶变换")
+        for page in pages:
+            with self.subTest(page=page):
+                self.app.sidebar.radio[0].set_value(page)
+                self.app.run()
+                self.assertEqual(
+                    len(self.app.exception),
+                    0,
+                    [error.message for error in self.app.exception],
+                )
+                self.assertGreaterEqual(len(self.app.get("plotly_chart")), 1)
+
     def test_report_template_is_not_in_navigation(self) -> None:
         self.assertNotIn("实验报告", self.app.sidebar.radio[0].options)
 
-    def test_all_signal_types_render_and_animation_advances(self) -> None:
+    def test_all_signal_types_render_plotly_charts(self) -> None:
         self.app.sidebar.radio[0].set_value("时域与频域").run()
         signal_selector = next(
             widget for widget in self.app.selectbox if widget.label == "信号类型"
@@ -48,37 +61,7 @@ class AppPageTests(unittest.TestCase):
                     0,
                     [error.message for error in self.app.exception],
                 )
-
-        next_button = next(
-            button
-            for button in self.app.button
-            if button.key == "time_frequency_next"
-        )
-        next_button.click().run()
-        self.assertEqual(self.app.session_state["time_frequency_position"], 1)
-
-        reset_button = next(
-            button
-            for button in self.app.button
-            if button.key == "time_frequency_reset"
-        )
-        reset_button.click().run()
-        self.assertEqual(self.app.session_state["time_frequency_position"], 0)
-
-        play_button = next(
-            button
-            for button in self.app.button
-            if button.key == "time_frequency_toggle"
-        )
-        play_button.click().run()
-        self.assertTrue(self.app.session_state["time_frequency_playing"])
-        play_button = next(
-            button
-            for button in self.app.button
-            if button.key == "time_frequency_toggle"
-        )
-        play_button.click().run()
-        self.assertFalse(self.app.session_state["time_frequency_playing"])
+                self.assertGreaterEqual(len(self.app.get("plotly_chart")), 1)
 
 
 if __name__ == "__main__":

@@ -3,8 +3,8 @@ import streamlit as st
 
 from signal_lab.core.signals import SignalType, generate_signal
 from signal_lab.core.spectrum import compute_amplitude_spectrum
-from signal_lab.visualization.animation import render_animation_controls
-from signal_lab.visualization.plots import create_time_frequency_figure
+from signal_lab.visualization.animation import render_animation_player
+from signal_lab.visualization.plots import build_time_frequency_animation
 
 
 SIGNAL_NAMES: dict[str, SignalType] = {
@@ -91,51 +91,63 @@ def render() -> None:
         window_name = st.selectbox("窗函数", ("矩形窗", "汉宁窗", "汉明窗"))
 
     sample_count = int(round(sampling_rate * duration))
-    time = np.arange(sample_count, dtype=float) / sampling_rate
-    animation_step_seconds = 0.05
-    frame_count = 100
+    full_time = np.arange(sample_count, dtype=float) / sampling_rate
+    initial_samples = generate_signal(
+        SIGNAL_NAMES[signal_name],
+        full_time,
+        amplitude=amplitude,
+        frequency=frequency,
+        phase_degrees=phase_degrees,
+        duty_cycle=duty_cycle,
+        pulse_width=pulse_width,
+        decay_rate=decay_rate,
+    )
+    frequencies, initial_magnitude = compute_amplitude_spectrum(
+        initial_samples,
+        sampling_rate,
+        int(fft_points),
+        window_name,
+    )
 
-    def render_frame(frame_index: int) -> None:
-        animation_time = frame_index * animation_step_seconds
-        samples = generate_signal(
-            SIGNAL_NAMES[signal_name],
-            time,
-            amplitude=amplitude,
-            frequency=frequency,
-            phase_degrees=phase_degrees,
-            duty_cycle=duty_cycle,
-            pulse_width=pulse_width,
-            decay_rate=decay_rate,
-            time_offset=animation_time,
-        )
-        frequencies, magnitude = compute_amplitude_spectrum(
-            samples,
-            sampling_rate,
-            int(fft_points),
-            window_name,
-        )
-        st.pyplot(
-            create_time_frequency_figure(
+    frame_count = 60
+    display_step = max(1, int(np.ceil(sample_count / 1200)))
+    time = full_time[::display_step]
+    wave_frames = np.stack(
+        [
+            generate_signal(
+                SIGNAL_NAMES[signal_name],
                 time,
-                samples,
-                frequencies,
-                magnitude,
-                signal_name=signal_name,
-                sampling_rate=sampling_rate,
-                fft_points=int(fft_points),
-                window_name=window_name,
-            ),
-            width="stretch",
-        )
-        st.caption(
-            f"函数运行时间：{animation_time:.2f} s | "
-            f"横轴固定：0–{duration:g} s"
-        )
-
-    render_animation_controls(frame_count, "time_frequency", render_frame)
+                amplitude=amplitude,
+                frequency=frequency,
+                phase_degrees=phase_degrees,
+                duty_cycle=duty_cycle,
+                pulse_width=pulse_width,
+                decay_rate=decay_rate,
+                time_offset=frame_index * 0.05,
+            )
+            for frame_index in range(frame_count)
+        ]
+    )
+    frequency_step = max(1, int(np.ceil(frequencies.size / 512)))
+    display_frequencies = frequencies[::frequency_step]
+    initial_magnitude = initial_magnitude[::frequency_step]
+    freq_frames = np.broadcast_to(
+        initial_magnitude,
+        (frame_count, initial_magnitude.size),
+    )
+    figure = build_time_frequency_animation(
+        time,
+        wave_frames,
+        freq_frames,
+        display_frequencies,
+        sampling_rate=sampling_rate,
+        fft_points=int(fft_points),
+        window_name=window_name,
+    )
+    render_animation_player(figure, "time_frequency_animation")
     st.info(SIGNAL_EXPLANATIONS[signal_name])
     st.caption(
-        f"采样点数：{sample_count} | FFT 频率栅格间隔："
-        f"{sampling_rate / int(fft_points):.3g} Hz。"
-        "FFT 点数大于采样点数时会补零；补零使频谱曲线更密，但不会提升真实频率分辨率。"
+        f"采样点数：{sample_count} | 动画帧数：{frame_count} | "
+        f"频率栅格间隔：{sampling_rate / int(fft_points):.3g} Hz。"
+        "动画在浏览器端播放，横轴固定；FFT 仅按当前参数计算一次。"
     )
