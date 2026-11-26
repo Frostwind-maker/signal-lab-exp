@@ -14,13 +14,15 @@ py -m http.server 8000
 
 Plotly.js 本地副本位于 `assets/plotly.min.js`，遵循 MIT 许可，声明见 `assets/THIRD_PARTY_NOTICES.md`。
 
-## GitHub Pages
+## 发布到 GitHub Pages（可选）
 
-仓库包含 GitHub Actions 工作流，会在 `main` 分支更新后部署静态 HTML 站点。Actions 首次部署成功后，站点地址为：
+项目已推送到 [GitHub 仓库](https://github.com/Frostwind-maker/signal-lab-exp)。GitHub Actions 会在每次更新时检查并打包 HTML 文件，打包结果可在 Actions 运行页面的 Artifacts 下载。
+
+若希望获得在线网页，可在仓库 **Settings → Pages → Build and deployment** 中选择 **Deploy from a branch**，设置分支为 `main`、目录为 `/(root)` 并保存。等待 GitHub 启用后，站点地址为：
 
 <https://frostwind-maker.github.io/signal-lab-exp/>
 
-若仓库设置未自动启用 Pages，请在 GitHub 仓库的 **Settings → Pages → Build and deployment** 中将 Source 设为 **GitHub Actions**。
+如果选择 **GitHub Actions** 作为 Pages 来源，需先在设置中启用 Pages 并授权 Actions；当前发布令牌无法替仓库所有者修改这一设置。
 
 ## Python/Streamlit 版本
 
