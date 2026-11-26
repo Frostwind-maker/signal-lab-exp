@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>信号与系统实验可视化</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./assets/plotly.min.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="项目总览">
+          <span class="brand-icon">∿</span>
+          <span><strong>信号与系统</strong><small>实验可视化工作台</small></span>
+        </a>
+        <p class="nav-label">实验模块</p>
+        <nav id="navigation" aria-label="实验模块">
+          <button class="nav-item active" data-page="overview"><span>⌂</span>项目总览</button>
+          <button class="nav-item" data-page="time-frequency"><span>∿</span>时域与频域</button>
+          <button class="nav-item" data-page="fourier"><span>Σ</span>傅里叶级数合成</button>
+          <button class="nav-item" data-page="stft"><span>▦</span>短时傅里叶变换</button>
+          <button class="nav-item" data-page="sampling"><span>⋮</span>采样与混叠</button>
+          <button class="nav-item" data-page="phase"><span>∠</span>相位谱与窗函数</button>
+          <button class="nav-item" data-page="filter"><span>⌁</span>滤波前后对比</button>
+          <button class="nav-item" data-page="voice"><span>♫</span>语音频谱分析</button>
+        </nav>
+        <div class="sidebar-footer">
+          <span class="status-dot"></span>
+          <span>本地运行 · 无需 Python 服务</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <span class="eyebrow">SIGNAL & SYSTEMS LAB</span>
+          <span class="offline-badge"><span></span>可离线使用</span>
+        </header>
+        <section id="page-header" class="page-header"></section>
+        <section id="page-body"></section>
+        <footer class="page-footer">
+          <span>交互计算在浏览器本机完成</span>
+          <span>Plotly.js · 本地资源</span>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

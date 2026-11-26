@@ -1,6 +1,30 @@
-# 信号与系统实验：傅里叶变换动画可视化
+# 信号与系统实验可视化
 
-基于 Python 和 Streamlit 的模块化实验项目，覆盖常见信号、FFT/傅里叶级数、STFT、采样与混叠，以及相位谱、窗函数、滤波和语音分析拓展。
+项目提供可离线打开的纯 HTML/JavaScript 实验站点，以及原有的 Python/Streamlit 实现。覆盖常见信号、FFT/傅里叶级数、STFT、采样与混叠、相位谱、窗函数、滤波和语音分析。
+
+## 本机打开 HTML 版本
+
+直接双击项目根目录的 `index.html`，即可在新版 Chrome、Edge 或 Firefox 中打开。界面、图表和数值运算所需文件均在仓库中，初次打开后无需安装 Python、npm 或联网。麦克风权限取决于浏览器的安全上下文；如果 `file://` 页面无法请求麦克风，可在项目目录运行：
+
+```powershell
+py -m http.server 8000
+```
+
+然后访问 <http://localhost:8000>。麦克风音频和导入的录音均在本机浏览器中处理，不会上传。
+
+Plotly.js 本地副本位于 `assets/plotly.min.js`，遵循 MIT 许可，声明见 `assets/THIRD_PARTY_NOTICES.md`。
+
+## GitHub Pages
+
+仓库包含 GitHub Actions 工作流，会在 `main` 分支更新后部署静态 HTML 站点。Actions 首次部署成功后，站点地址为：
+
+<https://frostwind-maker.github.io/signal-lab-exp/>
+
+若仓库设置未自动启用 Pages，请在 GitHub 仓库的 **Settings → Pages → Build and deployment** 中将 Source 设为 **GitHub Actions**。
+
+## Python/Streamlit 版本
+
+如需运行原有 Python 版本，请使用以下步骤。
 
 ## 运行环境
 
@@ -43,11 +67,11 @@ signal_lab/
   visualization/               图表和动画组件
 ```
 
-页面层负责参数交互和实验流程；`core` 层负责纯数值计算；`visualization` 层负责图表与动画。后续实现时尽量保持层间依赖单向：页面调用算法和绘图组件，算法不依赖 Streamlit。
+浏览器版入口是 `index.html`，功能逻辑位于 `app.js`，样式位于 `styles.css`。原 Python 版本保留在 `app.py` 和 `signal_lab/`：`core` 层负责纯数值计算，`screens` 组织 Streamlit 页面，`visualization` 负责原有图表。
 
 ## 当前状态
 
-时域/频域、傅里叶级数、STFT 和语音回放使用 Plotly 浏览器端帧动画，帧数据一次性生成，不依赖 Streamlit 定时重绘；时域动画固定横轴并推进信号函数本身。页面不再提供实验报告模板。其余实验页面已接入对应的数值算法和交互控件。语音模块支持本机麦克风连续频谱刷新，以及浏览器录音/WAV 上传后的分帧回放；WAV 支持 8/16/24/32 位 PCM。离开语音页面会停止本机麦克风采集。
+HTML 版本包含七个实验模块，使用本地 Plotly.js 绘图；时域动画固定横轴并推进信号函数，语音模块支持浏览器麦克风和本地音频文件。原有 Streamlit 版本仍可按上方步骤运行。页面不提供实验报告模板。
 
 ## 测试
 
